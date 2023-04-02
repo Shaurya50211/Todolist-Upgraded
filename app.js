@@ -3,6 +3,8 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose")
 const _ = require('lodash');
 
+require('dotenv').config()
+
 const defaultList = [{
     name: "Hit the + Button to add a new item"
   },
@@ -25,7 +27,7 @@ app.use(express.static("public"));
 
 const displayedItems = []
 
-mongoose.connect("mongodb://localhost:27017/todolistDB", {
+mongoose.connect(`mongodb+srv://admin-shaurya:${process.env.PASSWORD}@todolist-cluster.aerb2wq.mongodb.net/?retryWrites=true&w=majority/todolistDB`, {
   useNewUrlParser: true
 });
 
