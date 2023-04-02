@@ -27,7 +27,7 @@ app.use(express.static("public"));
 
 const displayedItems = []
 
-mongoose.connect(`mongodb+srv://admin-shaurya:${process.env.PASSWORD}@todolist-cluster.aerb2wq.mongodb.net/?retryWrites=true&w=majority/todolistDB`, {
+mongoose.connect(`mongodb+srv://admin-shaurya:${process.env.PASSWORD}@todolist-cluster.aerb2wq.mongodb.net/todolistDB`, {
   useNewUrlParser: true
 });
 
