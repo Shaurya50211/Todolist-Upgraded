@@ -1,8 +1,8 @@
-//jshint esversion:6
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose")
+const _ = require('lodash');
+
 const defaultList = [{
     name: "Hit the + Button to add a new item"
   },
@@ -62,50 +62,71 @@ app.get("/", function (req, res) {
 
 app.post("/", function (req, res) {
 
-  const item = req.body.newItem;
+  const itemName = req.body.newItem;
+  const listName = _.capitalize(req.body.list);
 
-  // if (req.body.list === "Work") {
-  //   workItems.push(item);
-  //   res.redirect("/work");
-  // } else {
-  //   items.push(item);
-  //   res.redirect("/");
-  // }r
+  const item = new Item({
+    name: itemName
+  })
 
-  Item.insertMany([{
-    name: item
-  }])
-
-  res.redirect("/")
+  if (listName === "Today") {
+    item.save()
+    res.redirect("/")
+  } else {
+    List.findOne({
+      name: listName
+    }).then(resp => {
+      resp.items.push(item)
+      resp.save()
+      res.redirect("/" + resp.name)
+    })
+  }
 });
 
 app.post("/delete", function (req, res) {
-  console.log(req.body.check)
+  const listItemID = req.body.check;
+  const listName = _.capitalize(req.body.listName);
 
-  Item.findOneAndRemove(req.body.check).then(res => {
-    console.log(res)
-  })
-
-  res.redirect("/")
+  if (listName === "Today") {
+    Item.findOneAndRemove(listItemID).then(res => {
+      console.log(res)
+    })
+    res.redirect("/")
+  } else {
+    List.findOneAndUpdate({
+        name: listName
+      }, {
+        $pull: {items: {_id: listItemID}}
+      })
+      .then(resp => {
+        res.redirect("/" + listName)
+      })
+  }
 })
 
 app.get("/:listName", function (req, res) {
-  const listName = req.params.listName;
-  const list = new List({
-    name: listName,
-    items: defaultList
-  })
+  const listName = _.capitalize(req.params.listName);
 
-  List.find({ name: listName }).then(res => {
-    if (res != []) {
-      // List already exists
-    } else {
-      // Create new list
-      list.save()
-    }
-  }).catch(err => {
-    console.log(err);
-  })
+  List.findOne({
+      name: listName
+    })
+    .then(resp => {
+      if (resp == null) {
+        const list = new List({
+          name: listName,
+          items: defaultList
+        })
+        // Doesn't exist
+        list.save()
+        res.redirect("/" + listName)
+      } else {
+        res.render("list", {
+          listTitle: resp.name,
+          newListItems: resp.items
+        });
+      }
+      console.log(resp);
+    })
 
 });
 
